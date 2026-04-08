@@ -416,11 +416,6 @@
     [ "$status" -eq 0 ]
 }
 
-@test "create storageclass linear-encrypted" {
-    run kubectl apply -f files/storageclass.linear-encrypted.yaml --wait --timeout=10s
-    [ "$status" -eq 0 ]
-}
-
 @test "create encrypted linear pvc" {
     run kubectl apply -f files/pvc.encrypted-linear.yaml --wait --timeout=30s
     [ "$status" -eq 0 ]
@@ -436,6 +431,11 @@
 
 @test "encrypted linear pod running" {
     run kubectl wait --for=jsonpath='{.status.phase}'=Running -f files/pod.encrypted-linear.vol.yaml --timeout=60s
+    [ "$status" -eq 0 ]
+}
+
+@test "encrypted linear pvc bound" {
+    run kubectl wait --for=jsonpath='{.status.phase}'=Bound -f files/pvc.encrypted-linear.yaml --timeout=30s
     [ "$status" -eq 0 ]
 }
 
@@ -462,11 +462,6 @@
     # Search for the known marker string on the raw LV — it must not appear
     run kubectl exec -n csi-driver-lvm "$PLUGIN_POD" -c csi-driver-lvm -- strings "/dev/csi-lvm/$PV_NAME"
     [[ "$output" != *"ENCRYPTION_TEST_MARKER"* ]]
-}
-
-@test "encrypted linear pvc bound" {
-    run kubectl wait --for=jsonpath='{.status.phase}'=Bound -f files/pvc.encrypted-linear.yaml --timeout=30s
-    [ "$status" -eq 0 ]
 }
 
 @test "resize encrypted linear pvc" {
@@ -574,11 +569,6 @@
     [ "$status" -eq 0 ]
 
     run kubectl delete -f files/pvc.encrypted-linear.yaml --wait --timeout=30s
-    [ "$status" -eq 0 ]
-}
-
-@test "delete storageclass linear-encrypted" {
-    run kubectl delete -f files/storageclass.linear-encrypted.yaml --wait --timeout=30s
     [ "$status" -eq 0 ]
 }
 
